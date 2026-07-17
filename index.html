@@ -5,420 +5,250 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MRT QR Generator → PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #f0f2f8;
-            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            font-family: system-ui, sans-serif;
             padding: 20px;
         }
         .container {
-            max-width: 520px;
+            max-width: 500px;
             width: 100%;
             background: white;
             border-radius: 28px;
-            box-shadow: 0 16px 40px rgba(0, 10, 30, 0.12);
-            padding: 30px 28px 32px;
+            padding: 30px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.1);
         }
-        h1 {
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: #0b1a33;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-        h1 small {
-            font-size: 0.8rem;
-            font-weight: 400;
-            color: #5a6f92;
-            background: #f0f4fe;
-            padding: 2px 12px;
-            border-radius: 40px;
-        }
-        .sub {
-            color: #4a5b7a;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #eef2f9;
-            padding-bottom: 18px;
-            margin-bottom: 22px;
-        }
-        .form-group {
-            margin-bottom: 18px;
-        }
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            font-size: 0.85rem;
-            color: #1f2c47;
-            margin-bottom: 5px;
-            letter-spacing: 0.3px;
-        }
+        h1 { font-size: 1.5rem; color: #0b1a33; margin-bottom: 5px; }
+        .sub { color: #666; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 500; font-size: 0.85rem; color: #1f2c47; margin-bottom: 5px; }
         .form-group input {
             width: 100%;
-            padding: 13px 16px;
-            border: 1px solid #d9e0eb;
-            border-radius: 14px;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
             font-size: 1rem;
-            background: #fafbff;
-            transition: 0.2s;
             outline: none;
         }
-        .form-group input:focus {
-            border-color: #0b1a33;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(11, 26, 51, 0.06);
-        }
-        .form-group .hint {
-            font-size: 0.75rem;
-            color: #8596b5;
-            margin-top: 4px;
-            padding-left: 4px;
-        }
+        .form-group input:focus { border-color: #0b1a33; }
         .preview-row {
-            display: flex;
             background: #f7faff;
-            border-radius: 14px;
-            padding: 12px 16px;
+            padding: 10px 16px;
+            border-radius: 12px;
             margin: 10px 0 16px;
             font-size: 0.85rem;
-            color: #1f2c47;
             border: 1px dashed #cbd5e6;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .preview-row span {
-            background: #eef2f9;
-            padding: 2px 12px;
-            border-radius: 30px;
-            font-family: monospace;
-            font-size: 0.8rem;
         }
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 14px;
             background: #0b1a33;
             color: white;
             border: none;
             border-radius: 60px;
+            font-size: 1rem;
             font-weight: 600;
-            font-size: 1.05rem;
             cursor: pointer;
-            transition: 0.15s;
-            box-shadow: 0 6px 14px rgba(11, 26, 51, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
             margin-top: 8px;
         }
-        .btn:hover {
-            background: #142b4a;
-            transform: scale(1.01);
-        }
-        .btn:active {
-            transform: scale(0.97);
-        }
-        .btn-secondary {
-            background: #eef2f9;
-            color: #0b1a33;
-            box-shadow: none;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .btn-secondary:hover {
-            background: #dce3f0;
-        }
+        .btn:hover { background: #142b4a; }
+        .btn-secondary { background: #eef2f9; color: #0b1a33; margin-top: 10px; }
         .status {
-            margin-top: 16px;
-            padding: 14px 16px;
-            border-radius: 14px;
-            background: #f7faff;
-            font-size: 0.9rem;
-            color: #1f2c47;
-            border: 1px solid #eef2f9;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 12px;
             display: none;
         }
-        .status.show {
-            display: block;
+        .status.show { display: block; }
+        .status.ok { background: #eafaf1; border: 1px solid #2b7a4b; }
+        .status.error { background: #fdeaea; border: 1px solid #b13e3e; }
+
+        /* Скрытый элемент для рендеринга страниц */
+        #pageTemplate {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 800px;
+            height: 1131px;
+            background: white;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
         }
-        .status.ok {
-            border-color: #2b7a4b;
-            background: #eafaf1;
-        }
-        .status.error {
-            border-color: #b13e3e;
-            background: #fdeaea;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 0.75rem;
-            color: #8596b5;
-            text-align: center;
-            border-top: 1px solid #eef2f9;
-            padding-top: 16px;
-        }
-        .footer a {
+        #pageTemplate .number {
+            font-size: 280px;
+            font-weight: bold;
             color: #0b1a33;
-            text-decoration: none;
-            font-weight: 500;
+            line-height: 1;
+            margin-bottom: 20px;
         }
-        @media (max-width: 440px) {
-            .container { padding: 20px 16px; }
+        #pageTemplate .qr-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
         }
+        #pageTemplate .qr-container canvas {
+            width: 350px;
+            height: 350px;
+        }
+        #pageTemplate .qr-code-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        #pageTemplate .name {
+            font-size: 48px;
+            font-weight: bold;
+            color: #0b1a33;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .footer { text-align: center; font-size: 0.75rem; color: #8596b5; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>
-            ⬛ MRT PDF
-            <small>QR + листы</small>
-        </h1>
-        <div class="sub">Создаёт PDF с QR-кодами по шаблону SQUA…MRT{N}</div>
+        <h1>⬛ MRT PDF</h1>
+        <div class="sub">Генерация PDF с QR-кодами</div>
 
         <div class="form-group">
-            <label>🔢 Код MRT (цифровая часть)</label>
-            <input type="text" id="mrtCode" placeholder="960302247" value="960302247">
-            <div class="hint">→ будет подставлено в SQUA<b id="codePreview">960302247</b>MRT{номер}</div>
+            <label>🔢 Код MRT</label>
+            <input type="text" id="mrtCode" value="960302247">
         </div>
 
         <div class="form-group">
-            <label>📄 Количество листов (MRT)</label>
-            <input type="number" id="sheetCount" placeholder="например 5" value="3" min="1" max="50">
+            <label>📄 Количество листов</label>
+            <input type="number" id="sheetCount" value="3" min="1" max="20">
         </div>
 
         <div class="form-group">
-            <label>📝 Наименование (под QR)</label>
-            <input type="text" id="userName" placeholder="ООО Ромашка" value="ООО Ромашка">
-            <div class="hint">Используйте только буквы, цифры и пробелы</div>
+            <label>📝 Наименование</label>
+            <input type="text" id="userName" value="ООО Ромашка">
         </div>
 
         <div class="preview-row">
-            <span>Пример:</span>
-            <code id="examplePreview">SQUA960302247MRT1</code>
+            Пример: <code id="examplePreview">SQUA960302247MRT1</code>
         </div>
 
-        <button class="btn" id="generatePdfBtn">📄 Сгенерировать PDF</button>
-        <button class="btn btn-secondary" id="clearBtn">✕ Очистить всё</button>
+        <button class="btn" id="generateBtn">📄 Сгенерировать PDF</button>
+        <button class="btn btn-secondary" id="clearBtn">✕ Очистить</button>
 
         <div class="status" id="statusMessage"></div>
-        <div class="footer">
-            ⚡ библиотеки: 
-            <a href="https://github.com/davidshimjs/qrcodejs" target="_blank">QRCode.js</a> · 
-            <a href="https://github.com/parallax/jsPDF" target="_blank">jsPDF</a>
-        </div>
+        <div class="footer">Работает полностью в браузере</div>
+    </div>
+
+    <!-- Скрытый шаблон для создания страниц -->
+    <div id="pageTemplate">
+        <div class="number" id="pageNumber">1</div>
+        <div class="qr-container" id="qrContainer"></div>
+        <div class="qr-code-text" id="qrText">SQUA960302247MRT1</div>
+        <div class="name" id="pageName">ООО Ромашка</div>
     </div>
 
     <script>
         (function() {
-            // DOM элементы
             const mrtCodeInput = document.getElementById('mrtCode');
             const sheetCountInput = document.getElementById('sheetCount');
             const userNameInput = document.getElementById('userName');
-            const generateBtn = document.getElementById('generatePdfBtn');
+            const generateBtn = document.getElementById('generateBtn');
             const clearBtn = document.getElementById('clearBtn');
             const statusDiv = document.getElementById('statusMessage');
-            const codePreview = document.getElementById('codePreview');
             const examplePreview = document.getElementById('examplePreview');
-
-            function updatePreview() {
-                const code = mrtCodeInput.value.trim() || '960302247';
-                codePreview.textContent = code;
-                examplePreview.textContent = `SQUA${code}MRT1`;
-            }
-
-            mrtCodeInput.addEventListener('input', updatePreview);
-            updatePreview();
+            const pageTemplate = document.getElementById('pageTemplate');
+            const pageNumber = document.getElementById('pageNumber');
+            const qrContainer = document.getElementById('qrContainer');
+            const qrText = document.getElementById('qrText');
+            const pageName = document.getElementById('pageName');
 
             function showStatus(message, type = 'ok') {
                 statusDiv.textContent = message;
                 statusDiv.className = 'status show ' + type;
-                setTimeout(() => {
-                    statusDiv.className = 'status';
-                }, 5000);
+                setTimeout(() => { statusDiv.className = 'status'; }, 5000);
             }
 
-            function generateQRCode(text, size) {
-                return new Promise((resolve, reject) => {
-                    try {
-                        const container = document.createElement('div');
-                        container.style.width = size + 'px';
-                        container.style.height = size + 'px';
-                        container.style.position = 'fixed';
-                        container.style.left = '-9999px';
-                        container.style.top = '-9999px';
-                        document.body.appendChild(container);
+            function updatePreview() {
+                const code = mrtCodeInput.value.trim() || '960302247';
+                examplePreview.textContent = `SQUA${code}MRT1`;
+            }
+            mrtCodeInput.addEventListener('input', updatePreview);
+            updatePreview();
 
-                        const qr = new QRCode(container, {
-                            text: text,
-                            width: size,
-                            height: size,
-                            colorDark: '#0b1a33',
-                            colorLight: '#ffffff',
-                            correctLevel: QRCode.CorrectLevel.M
-                        });
-
-                        setTimeout(() => {
-                            const canvas = container.querySelector('canvas');
-                            if (canvas) {
-                                document.body.removeChild(container);
-                                resolve(canvas);
-                            } else {
-                                document.body.removeChild(container);
-                                reject(new Error('QR-код не создан'));
-                            }
-                        }, 150);
-                    } catch (e) {
-                        reject(e);
-                    }
+            function generateQR(text, container) {
+                return new Promise((resolve) => {
+                    container.innerHTML = '';
+                    const qr = new QRCode(container, {
+                        text: text,
+                        width: 350,
+                        height: 350,
+                        colorDark: '#0b1a33',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                    setTimeout(resolve, 200);
                 });
-            }
-
-            // Функция для транслитерации кириллицы в латиницу
-            function transliterate(text) {
-                const map = {
-                    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
-                    'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
-                    'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
-                    'ф': 'f', 'х': 'h', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '',
-                    'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
-                    'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E',
-                    'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M',
-                    'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U',
-                    'Ф': 'F', 'Х': 'H', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch', 'Ъ': '',
-                    'Ы': 'Y', 'Ь': '', 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya'
-                };
-                
-                return text.split('').map(char => {
-                    return map[char] || char;
-                }).join('');
             }
 
             async function generatePDF() {
                 const mrtCode = mrtCodeInput.value.trim();
-                const sheetCount = parseInt(sheetCountInput.value, 10);
-                const userName = userNameInput.value.trim() || 'Bez naimenovaniya';
+                const sheetCount = parseInt(sheetCountInput.value) || 1;
+                const userName = userNameInput.value.trim() || 'Без наименования';
 
                 if (!mrtCode) {
-                    showStatus('❌ Введите цифровую часть MRT-кода', 'error');
-                    return;
-                }
-                if (!sheetCount || sheetCount < 1 || sheetCount > 50) {
-                    showStatus('❌ Введите количество листов (1-50)', 'error');
-                    return;
-                }
-
-                let jsPDFLib;
-                if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
-                    jsPDFLib = window.jspdf.jsPDF;
-                } else if (typeof window.jsPDF !== 'undefined') {
-                    jsPDFLib = window.jsPDF;
-                } else {
-                    showStatus('❌ Библиотека jsPDF не загружена', 'error');
+                    showStatus('❌ Введите код MRT', 'error');
                     return;
                 }
 
                 try {
                     showStatus('⏳ Генерация PDF...', 'ok');
 
-                    const doc = new jsPDFLib({
-                        orientation: 'portrait',
-                        unit: 'mm',
-                        format: 'a4'
-                    });
-
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('p', 'mm', 'a4');
                     const pageWidth = 210;
                     const pageHeight = 297;
-                    const margin = 15;
-                    
-                    // Рассчитываем размеры
-                    const totalHeight = pageHeight - margin * 2;
-                    const numberHeight = totalHeight * 0.45;
-                    const qrHeight = totalHeight * 0.40;
-                    const nameHeight = totalHeight * 0.15;
-
-                    // Транслитерируем текст для корректного отображения в PDF
-                    const transliteratedName = transliterate(userName);
 
                     for (let i = 1; i <= sheetCount; i++) {
-                        if (i > 1) {
-                            doc.addPage();
-                        }
+                        if (i > 1) doc.addPage();
 
                         const fullCode = `SQUA${mrtCode}MRT${i}`;
-                        let currentY = margin;
 
-                        // === 1. БОЛЬШАЯ ЦИФРА (45%) ===
-                        let fontSize = 200;
-                        if (i >= 10) fontSize = 160;
-                        if (i >= 100) fontSize = 120;
-                        
-                        doc.setFontSize(fontSize);
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor('#0b1a33');
-                        
-                        const numberY = currentY + numberHeight * 0.58;
-                        doc.text(String(i), pageWidth / 2, numberY, { align: 'center' });
-                        
-                        currentY += numberHeight;
+                        // Обновляем шаблон
+                        pageNumber.textContent = String(i);
+                        pageName.textContent = userName;
+                        qrText.textContent = fullCode;
 
-                        // === 2. QR-код (40%) ===
-                        try {
-                            const qrSize = Math.min(qrHeight * 0.75, pageWidth - margin * 6);
-                            const canvas = await generateQRCode(fullCode, 350);
-                            const imgData = canvas.toDataURL('image/png');
-                            
-                            const x = (pageWidth - qrSize) / 2;
-                            const y = currentY + (qrHeight - qrSize) / 2;
-                            doc.addImage(imgData, 'PNG', x, y, qrSize, qrSize);
+                        // Генерируем QR
+                        await generateQR(fullCode, qrContainer);
 
-                            // Подпись под QR
-                            doc.setFontSize(8);
-                            doc.setFont('helvetica', 'normal');
-                            doc.setTextColor('#666666');
-                            doc.text(fullCode, pageWidth / 2, currentY + qrHeight - 3, { align: 'center' });
-                            
-                        } catch (qrError) {
-                            console.error('Ошибка QR:', qrError);
-                            doc.setFontSize(14);
-                            doc.setTextColor('#b13e3e');
-                            doc.text('QR generation error', pageWidth / 2, currentY + qrHeight / 2, { align: 'center' });
-                        }
-                        currentY += qrHeight;
+                        // Конвертируем в canvas
+                        const canvas = await html2canvas(pageTemplate, {
+                            scale: 1.5,
+                            useCORS: true,
+                            logging: false,
+                            width: 800,
+                            height: 1131
+                        });
 
-                        // === 3. НАИМЕНОВАНИЕ (15%) ===
-                        // Используем транслитерированный текст
-                        doc.setFontSize(24);
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor('#0b1a33');
-                        
-                        const nameY = currentY + nameHeight * 0.65;
-                        doc.text(transliteratedName, pageWidth / 2, nameY, { align: 'center' });
-
-                        // Номер страницы внизу
-                        doc.setFontSize(8);
-                        doc.setFont('helvetica', 'normal');
-                        doc.setTextColor('#8596b5');
-                        doc.text(`Page ${i} of ${sheetCount}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
+                        // Добавляем в PDF
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
                     }
 
-                    const fileName = `MRT_${mrtCode}_${sheetCount}pages.pdf`;
-                    doc.save(fileName);
-                    showStatus(`✅ PDF created! (${sheetCount} pages)`, 'ok');
+                    doc.save(`MRT_${mrtCode}.pdf`);
+                    showStatus(`✅ PDF создан! (${sheetCount} листов)`, 'ok');
 
                 } catch (error) {
-                    console.error('Ошибка:', error);
+                    console.error(error);
                     showStatus(`❌ Ошибка: ${error.message}`, 'error');
                 }
             }
@@ -428,38 +258,17 @@
                 sheetCountInput.value = '3';
                 userNameInput.value = 'ООО Ромашка';
                 updatePreview();
-                statusDiv.className = 'status';
-                showStatus('🧹 Fields cleared', 'ok');
+                showStatus('🧹 Очищено', 'ok');
             }
 
             generateBtn.addEventListener('click', generatePDF);
             clearBtn.addEventListener('click', clearAll);
 
-            document.querySelectorAll('input').forEach(input => {
-                input.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        generatePDF();
-                    }
-                });
+            document.querySelectorAll('input').forEach(el => {
+                el.addEventListener('keydown', e => { if (e.key === 'Enter') generatePDF(); });
             });
 
-            // Проверка загрузки библиотек
-            if (typeof QRCode === 'undefined') {
-                showStatus('⚠️ QRCode.js not loaded', 'error');
-            }
-            
-            let jsPDFLoaded = false;
-            if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
-                jsPDFLoaded = true;
-            } else if (typeof window.jsPDF !== 'undefined') {
-                jsPDFLoaded = true;
-            }
-            if (!jsPDFLoaded) {
-                showStatus('⚠️ jsPDF not loaded', 'error');
-            }
-
-            console.log('✅ MRT PDF Generator ready');
+            console.log('✅ Готово!');
         })();
     </script>
 </body>
