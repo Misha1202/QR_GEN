@@ -199,8 +199,9 @@
         </div>
 
         <div class="form-group">
-            <label>👤 Имя (под каждым QR)</label>
-            <input type="text" id="userName" placeholder="Иванов И.И." value="Иванов И.И.">
+            <label>📝 Наименование (под QR)</label>
+            <input type="text" id="userName" placeholder="ООО Ромашка" value="ООО Ромашка">
+            <div class="hint">Используйте только буквы, цифры и пробелы</div>
         </div>
 
         <div class="preview-row">
@@ -283,10 +284,21 @@
                 });
             }
 
+            // Функция для правильного отображения кириллицы в jsPDF
+            function cyrillicToUnicode(str) {
+                return str.split('').map(char => {
+                    const code = char.charCodeAt(0);
+                    if (code >= 0x0400 && code <= 0x04FF) {
+                        return String.fromCharCode(code);
+                    }
+                    return char;
+                }).join('');
+            }
+
             async function generatePDF() {
                 const mrtCode = mrtCodeInput.value.trim();
                 const sheetCount = parseInt(sheetCountInput.value, 10);
-                const userName = userNameInput.value.trim() || 'Без имени';
+                const userName = userNameInput.value.trim() || 'Без наименования';
 
                 if (!mrtCode) {
                     showStatus('❌ Введите цифровую часть MRT-кода', 'error');
@@ -320,11 +332,11 @@
                     const pageHeight = 297;
                     const margin = 15;
                     
-                    // Рассчитываем размеры
+                    // Рассчитываем размеры (45% - цифра, 40% - QR, 15% - наименование)
                     const totalHeight = pageHeight - margin * 2;
-                    const numberHeight = totalHeight * 0.40;  // 40% на цифру
-                    const qrHeight = totalHeight * 0.40;      // 40% на QR
-                    const nameHeight = totalHeight * 0.20;    // 20% на имя
+                    const numberHeight = totalHeight * 0.45;  // Цифра ещё больше
+                    const qrHeight = totalHeight * 0.40;
+                    const nameHeight = totalHeight * 0.15;
 
                     for (let i = 1; i <= sheetCount; i++) {
                         if (i > 1) {
@@ -334,17 +346,26 @@
                         const fullCode = `SQUA${mrtCode}MRT${i}`;
                         let currentY = margin;
 
-                        // === 1. БОЛЬШАЯ ЦИФРА (40%) ===
-                        doc.setFontSize(120);
+                        // === 1. БОЛЬШАЯ ЦИФРА (45%) - занимает почти половину страницы ===
+                        // Определяем размер шрифта в зависимости от количества цифр
+                        let fontSize = 200;
+                        if (i >= 10) fontSize = 160;
+                        if (i >= 100) fontSize = 120;
+                        
+                        doc.setFontSize(fontSize);
                         doc.setFont('helvetica', 'bold');
                         doc.setTextColor('#0b1a33');
-                        doc.text(String(i), pageWidth / 2, currentY + numberHeight * 0.65, { align: 'center' });
+                        
+                        // Центрируем цифру по вертикали в её зоне
+                        const numberY = currentY + numberHeight * 0.58;
+                        doc.text(String(i), pageWidth / 2, numberY, { align: 'center' });
+                        
                         currentY += numberHeight;
 
                         // === 2. QR-код (40%) ===
                         try {
-                            // Размер QR вычисляем относительно отведённого места
-                            const qrSize = Math.min(qrHeight * 0.75, pageWidth - margin * 4);
+                            // QR делаем квадратным
+                            const qrSize = Math.min(qrHeight * 0.75, pageWidth - margin * 6);
                             const canvas = await generateQRCode(fullCode, 350);
                             const imgData = canvas.toDataURL('image/png');
                             
@@ -352,30 +373,32 @@
                             const y = currentY + (qrHeight - qrSize) / 2;
                             doc.addImage(imgData, 'PNG', x, y, qrSize, qrSize);
 
-                            // Подпись под QR (маленький текст)
+                            // Подпись под QR (полный код) - маленький шрифт
                             doc.setFontSize(8);
                             doc.setFont('helvetica', 'normal');
-                            doc.setTextColor('#8596b5');
+                            doc.setTextColor('#666666');
                             doc.text(fullCode, pageWidth / 2, currentY + qrHeight - 3, { align: 'center' });
                             
                         } catch (qrError) {
                             console.error('Ошибка QR:', qrError);
                             doc.setFontSize(14);
                             doc.setTextColor('#b13e3e');
-                            doc.text('❌ Ошибка QR', pageWidth / 2, currentY + qrHeight / 2, { align: 'center' });
+                            doc.text('❌ Ошибка генерации QR', pageWidth / 2, currentY + qrHeight / 2, { align: 'center' });
                         }
                         currentY += qrHeight;
 
-                        // === 3. ИМЯ (20%) ===
-                        doc.setFontSize(32);
+                        // === 3. НАИМЕНОВАНИЕ (15%) ===
+                        // Используем крупный шрифт с поддержкой кириллицы
+                        doc.setFontSize(24);
                         doc.setFont('helvetica', 'bold');
                         doc.setTextColor('#0b1a33');
-                        doc.text(userName, pageWidth / 2, currentY + nameHeight * 0.65, { align: 'center' });
-
-                        // Рамка для отладки (опционально)
-                        // doc.setDrawColor('#eef2f9');
-                        // doc.setLineWidth(0.3);
-                        // doc.rect(margin, margin, pageWidth - margin*2, totalHeight);
+                        
+                        // Конвертируем текст для правильного отображения
+                        const textToShow = cyrillicToUnicode(userName);
+                        
+                        // Центрируем текст по вертикали в его зоне
+                        const nameY = currentY + nameHeight * 0.65;
+                        doc.text(textToShow, pageWidth / 2, nameY, { align: 'center' });
 
                         // Номер страницы внизу
                         doc.setFontSize(8);
@@ -397,7 +420,7 @@
             function clearAll() {
                 mrtCodeInput.value = '960302247';
                 sheetCountInput.value = '3';
-                userNameInput.value = 'Иванов И.И.';
+                userNameInput.value = 'ООО Ромашка';
                 updatePreview();
                 statusDiv.className = 'status';
                 showStatus('🧹 Поля очищены', 'ok');
