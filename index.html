@@ -30,15 +30,16 @@
         .sub { color: #666; font-size: 0.9rem; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: 500; font-size: 0.85rem; color: #1f2c47; margin-bottom: 5px; }
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 12px 16px;
             border: 1px solid #ddd;
             border-radius: 12px;
             font-size: 1rem;
             outline: none;
+            background: white;
         }
-        .form-group input:focus { border-color: #0b1a33; }
+        .form-group input:focus, .form-group select:focus { border-color: #0b1a33; }
         .preview-row {
             background: #f7faff;
             padding: 10px 16px;
@@ -115,6 +116,34 @@
             text-align: center;
         }
         .footer { text-align: center; font-size: 0.75rem; color: #8596b5; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; }
+        .style-switch {
+            display: flex;
+            gap: 12px;
+            background: #f0f2f8;
+            padding: 6px;
+            border-radius: 40px;
+            margin-bottom: 10px;
+        }
+        .style-switch label {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1f2c47;
+        }
+        .style-switch input[type="radio"] {
+            display: none;
+        }
+        .style-switch input[type="radio"]:checked + label {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            color: #0b1a33;
+        }
+        .style-switch label:hover { background: rgba(255,255,255,0.5); }
     </style>
 </head>
 <body>
@@ -134,7 +163,18 @@
 
         <div class="form-group">
             <label>📝 Наименование</label>
-            <input type="text" id="userName" value="ООО Ромашка">
+            <input type="text" id="userName" value="КС">
+        </div>
+
+        <!-- Переключатель стилей -->
+        <div class="form-group">
+            <label>🎨 Стиль QR-кода</label>
+            <div class="style-switch">
+                <input type="radio" name="qrStyle" id="styleOld" value="old" checked>
+                <label for="styleOld">Старый (SQUA...MRT)</label>
+                <input type="radio" name="qrStyle" id="styleNew" value="new">
+                <label for="styleNew">Новый (только код)</label>
+            </div>
         </div>
 
         <div class="preview-row">
@@ -153,7 +193,7 @@
         <div class="number" id="pageNumber">1</div>
         <div class="qr-container" id="qrContainer"></div>
         <div class="qr-code-text" id="qrText">SQUA960302247MRT1</div>
-        <div class="name" id="pageName">ООО Ромашка</div>
+        <div class="name" id="pageName">КС</div>
     </div>
 
     <script>
@@ -171,18 +211,46 @@
             const qrText = document.getElementById('qrText');
             const pageName = document.getElementById('pageName');
 
+            // Стиль: old / new
+            const styleOld = document.getElementById('styleOld');
+            const styleNew = document.getElementById('styleNew');
+
+            function getSelectedStyle() {
+                return styleOld.checked ? 'old' : 'new';
+            }
+
+            // Формирование текста для QR в зависимости от стиля и номера листа
+            function buildQRText(code, index) {
+                const style = getSelectedStyle();
+                if (style === 'new') {
+                    return code; // только код, без добавок
+                } else {
+                    return `SQUA${code}MRT${index}`;
+                }
+            }
+
+            function updatePreview() {
+                const code = mrtCodeInput.value.trim() || '960302247';
+                const style = getSelectedStyle();
+                let previewText;
+                if (style === 'new') {
+                    previewText = code;
+                } else {
+                    previewText = `SQUA${code}MRT1`;
+                }
+                examplePreview.textContent = previewText;
+            }
+
+            mrtCodeInput.addEventListener('input', updatePreview);
+            styleOld.addEventListener('change', updatePreview);
+            styleNew.addEventListener('change', updatePreview);
+            updatePreview();
+
             function showStatus(message, type = 'ok') {
                 statusDiv.textContent = message;
                 statusDiv.className = 'status show ' + type;
                 setTimeout(() => { statusDiv.className = 'status'; }, 5000);
             }
-
-            function updatePreview() {
-                const code = mrtCodeInput.value.trim() || '960302247';
-                examplePreview.textContent = `SQUA${code}MRT1`;
-            }
-            mrtCodeInput.addEventListener('input', updatePreview);
-            updatePreview();
 
             function generateQR(text, container) {
                 return new Promise((resolve) => {
@@ -202,7 +270,7 @@
             async function generatePDF() {
                 const mrtCode = mrtCodeInput.value.trim();
                 const sheetCount = parseInt(sheetCountInput.value) || 1;
-                const userName = userNameInput.value.trim() || 'Без наименования';
+                const userName = userNameInput.value.trim() || 'КС';
 
                 if (!mrtCode) {
                     showStatus('❌ Введите код MRT', 'error');
@@ -220,7 +288,8 @@
                     for (let i = 1; i <= sheetCount; i++) {
                         if (i > 1) doc.addPage();
 
-                        const fullCode = `SQUA${mrtCode}MRT${i}`;
+                        // Формируем текст для QR в зависимости от стиля
+                        const fullCode = buildQRText(mrtCode, i);
 
                         // Обновляем шаблон
                         pageNumber.textContent = String(i);
@@ -245,7 +314,7 @@
                     }
 
                     doc.save(`MRT_${mrtCode}.pdf`);
-                    showStatus(`✅ PDF создан! (${sheetCount} листов)`, 'ok');
+                    showStatus(`✅ PDF создан! (${sheetCount} листов, стиль: ${getSelectedStyle()})`, 'ok');
 
                 } catch (error) {
                     console.error(error);
@@ -256,7 +325,8 @@
             function clearAll() {
                 mrtCodeInput.value = '960302247';
                 sheetCountInput.value = '3';
-                userNameInput.value = 'ООО Ромашка';
+                userNameInput.value = 'КС';
+                styleOld.checked = true;
                 updatePreview();
                 showStatus('🧹 Очищено', 'ok');
             }
