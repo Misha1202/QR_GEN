@@ -28,7 +28,7 @@
         }
 
         .container {
-            max-width: 580px;
+            max-width: 500px;
             width: 100%;
             background: white;
             border-radius: 28px;
@@ -48,59 +48,6 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 15px;
             margin-bottom: 20px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            background: #f0f2f8;
-            padding: 6px;
-            border-radius: 40px;
-            margin-bottom: 20px;
-        }
-
-        .tabs button {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 10px 12px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #1f2c47;
-        }
-
-        .tabs button.active {
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            color: #0b1a33;
-        }
-
-        .tabs button:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        .tab-content {
-            display: none;
-            animation: fade 0.2s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fade {
-            from {
-                opacity: 0.6;
-                transform: translateY(4px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .form-group {
@@ -129,12 +76,6 @@
         .form-group input:focus,
         .form-group select:focus {
             border-color: #0b1a33;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
         }
 
         .preview-row {
@@ -190,6 +131,55 @@
             border: 1px solid #b13e3e;
         }
 
+        /* Скрытый элемент для рендеринга страниц */
+        #pageTemplate {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 800px;
+            height: 1131px;
+            background: white;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+
+        #pageTemplate .number {
+            font-size: 280px;
+            font-weight: bold;
+            color: #0b1a33;
+            line-height: 1;
+            margin-bottom: 20px;
+        }
+
+        #pageTemplate .qr-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        #pageTemplate .qr-container canvas {
+            width: 350px;
+            height: 350px;
+        }
+
+        #pageTemplate .qr-code-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        #pageTemplate .name {
+            font-size: 48px;
+            font-weight: bold;
+            color: #0b1a33;
+            margin-top: 20px;
+            text-align: center;
+        }
+
         .footer {
             text-align: center;
             font-size: 0.75rem;
@@ -199,57 +189,36 @@
             border-top: 1px solid #eee;
         }
 
-        /* Скрытый шаблон — теперь динамический */
-        #pageTemplate {
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 800px;
-            height: 1131px;
+        .style-toggle {
+            display: flex;
+            gap: 12px;
+            background: #f0f2f8;
+            padding: 6px;
+            border-radius: 40px;
+            margin-bottom: 12px;
+        }
+
+        .style-toggle button {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 8px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #1f2c47;
+        }
+
+        .style-toggle button.active {
             background: white;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            gap: 10px;
-        }
-
-        #pageTemplate .number {
-            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             color: #0b1a33;
-            line-height: 1;
         }
 
-        #pageTemplate .qr-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-        }
-
-        #pageTemplate .qr-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #pageTemplate .qr-item canvas {
-            display: block;
-        }
-
-        #pageTemplate .qr-label {
-            font-size: 12px;
-            color: #555;
-            margin-top: 4px;
-        }
-
-        #pageTemplate .name {
-            font-weight: bold;
-            color: #0b1a33;
-            text-align: center;
+        .style-toggle button:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.4);
         }
     </style>
 </head>
@@ -258,99 +227,48 @@
         <h1>⬛ MRT PDF</h1>
         <div class="sub">Генерация PDF с QR-кодами</div>
 
-        <!-- Вкладки -->
-        <div class="tabs">
-            <button class="active" data-tab="main">📝 Основное</button>
-            <button data-tab="layout">🎛️ Настройки листа</button>
+        <!-- Переключатель стилей -->
+        <div class="style-toggle" id="styleToggle">
+            <button class="active" data-style="old">📜 Старый стиль</button>
+            <button data-style="new">✨ Новый стиль</button>
         </div>
 
-        <!-- Вкладка: Основное -->
-        <div class="tab-content active" id="tab-main">
-            <div class="form-group">
-                <label>🔢 Код MRT</label>
-                <input type="text" id="mrtCode" value="960302247">
-            </div>
-
-            <div class="form-group">
-                <label>📄 Количество листов</label>
-                <input type="number" id="sheetCount" value="3" min="1" max="20">
-            </div>
-
-            <div class="form-group">
-                <label>📝 Наименование</label>
-                <input type="text" id="userName" value="КС">
-            </div>
-
-            <div class="preview-row">
-                Пример: <code id="examplePreview">SQUA960302247MRT1</code>
-            </div>
-
-            <button class="btn" id="generateBtn">📄 Сгенерировать PDF</button>
-            <button class="btn btn-secondary" id="clearBtn">✕ Очистить</button>
+        <div class="form-group">
+            <label>🔢 Код MRT</label>
+            <input type="text" id="mrtCode" value="960302247">
         </div>
 
-        <!-- Вкладка: Настройки листа -->
-        <div class="tab-content" id="tab-layout">
-            <div class="form-group">
-                <label>🧩 Режим отображения</label>
-                <select id="layoutMode">
-                    <option value="big-number">Большая цифра + 1 QR</option>
-                    <option value="grid-4">Сетка 2×2 (4 QR)</option>
-                    <option value="grid-6">Сетка 2×3 (6 QR)</option>
-                    <option value="grid-9">Сетка 3×3 (9 QR)</option>
-                    <option value="custom">Своя сетка</option>
-                </select>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Колонок (cols)</label>
-                    <input type="number" id="gridCols" value="2" min="1" max="5">
-                </div>
-                <div class="form-group">
-                    <label>Строк (rows)</label>
-                    <input type="number" id="gridRows" value="2" min="1" max="5">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Размер QR (px)</label>
-                    <input type="number" id="qrSize" value="180" min="60" max="350">
-                </div>
-                <div class="form-group">
-                    <label>Размер цифры (px)</label>
-                    <input type="number" id="numberSize" value="200" min="60" max="400">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Показывать подпись под QR</label>
-                <select id="showLabel">
-                    <option value="true">Да</option>
-                    <option value="false">Нет</option>
-                </select>
-            </div>
-
-            <div class="preview-row" style="margin-top: 6px;">
-                ⚙️ Изменения применяются при генерации PDF.
-            </div>
+        <div class="form-group">
+            <label>📄 Количество листов</label>
+            <input type="number" id="sheetCount" value="3" min="1" max="20">
         </div>
+
+        <div class="form-group">
+            <label>📝 Наименование</label>
+            <input type="text" id="userName" value="КС">
+        </div>
+
+        <div class="preview-row">
+            Пример: <code id="examplePreview">SQUA960302247MRT1</code>
+        </div>
+
+        <button class="btn" id="generateBtn">📄 Сгенерировать PDF</button>
+        <button class="btn btn-secondary" id="clearBtn">✕ Очистить</button>
 
         <div class="status" id="statusMessage"></div>
         <div class="footer">Работает полностью в браузере</div>
     </div>
 
-    <!-- Скрытый шаблон -->
+    <!-- Скрытый шаблон для создания страниц -->
     <div id="pageTemplate">
         <div class="number" id="pageNumber">1</div>
-        <div class="qr-grid" id="qrGrid"></div>
+        <div class="qr-container" id="qrContainer"></div>
+        <div class="qr-code-text" id="qrText">SQUA960302247MRT1</div>
         <div class="name" id="pageName">КС</div>
     </div>
 
     <script>
         (function() {
-            // --- DOM ---
             const mrtCodeInput = document.getElementById('mrtCode');
             const sheetCountInput = document.getElementById('sheetCount');
             const userNameInput = document.getElementById('userName');
@@ -358,58 +276,27 @@
             const clearBtn = document.getElementById('clearBtn');
             const statusDiv = document.getElementById('statusMessage');
             const examplePreview = document.getElementById('examplePreview');
-
-            // настройки листа
-            const layoutMode = document.getElementById('layoutMode');
-            const gridCols = document.getElementById('gridCols');
-            const gridRows = document.getElementById('gridRows');
-            const qrSizeInput = document.getElementById('qrSize');
-            const numberSizeInput = document.getElementById('numberSize');
-            const showLabelSelect = document.getElementById('showLabel');
-
-            // шаблон
             const pageTemplate = document.getElementById('pageTemplate');
-            const pageNumberEl = document.getElementById('pageNumber');
-            const qrGrid = document.getElementById('qrGrid');
-            const pageNameEl = document.getElementById('pageName');
+            const pageNumber = document.getElementById('pageNumber');
+            const qrContainer = document.getElementById('qrContainer');
+            const qrText = document.getElementById('qrText');
+            const pageName = document.getElementById('pageName');
 
-            // --- вкладки ---
-            const tabs = document.querySelectorAll('.tabs button');
-            const tabContents = {
-                main: document.getElementById('tab-main'),
-                layout: document.getElementById('tab-layout')
-            };
+            // --- состояние стиля ---
+            let currentStyle = 'old'; // 'old' или 'new'
 
-            tabs.forEach(btn => {
+            // переключатель
+            const styleButtons = document.querySelectorAll('#styleToggle button');
+            styleButtons.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    tabs.forEach(b => b.classList.remove('active'));
+                    styleButtons.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
-                    const tabName = this.dataset.tab;
-                    Object.keys(tabContents).forEach(key => {
-                        tabContents[key].classList.toggle('active', key === tabName);
-                    });
+                    currentStyle = this.dataset.style;
+                    updatePreview();
+                    // небольшая подсказка
+                    showStatus(`Стиль: ${currentStyle === 'old' ? 'Старый (с добавками)' : 'Новый (только код)'}`, 'ok');
                 });
             });
-
-            // --- состояние стиля (old/new) сохраняем, но теперь через переключатель в основной вкладке? ---
-            // Сделаем проще: добавим скрытый селектор, но для совместимости оставим как есть.
-            // Добавим переключатель стиля прямо в основную вкладку.
-            // Добавим его динамически.
-            const mainTab = document.getElementById('tab-main');
-            const styleToggle = document.createElement('div');
-            styleToggle.className = 'form-group';
-            styleToggle.innerHTML = `
-                <label>🎨 Стиль QR</label>
-                <select id="styleSelect">
-                    <option value="old">Старый (SQUA...MRT)</option>
-                    <option value="new">Новый (только код)</option>
-                </select>
-            `;
-            // вставим после поля "Наименование"
-            const nameGroup = document.querySelector('.form-group:has(#userName)');
-            nameGroup.after(styleToggle);
-
-            const styleSelect = document.getElementById('styleSelect');
 
             // --- функции ---
             function showStatus(message, type = 'ok') {
@@ -419,9 +306,11 @@
             }
 
             function getQRText(rawCode, index) {
-                if (styleSelect.value === 'old') {
+                // index — номер листа (1-based)
+                if (currentStyle === 'old') {
                     return `SQUA${rawCode}MRT${index}`;
                 } else {
+                    // новый стиль: просто введённый код без добавок
                     return rawCode;
                 }
             }
@@ -431,153 +320,27 @@
                 const previewText = getQRText(code, 1);
                 examplePreview.textContent = previewText;
             }
+
             mrtCodeInput.addEventListener('input', updatePreview);
-            styleSelect.addEventListener('change', updatePreview);
             updatePreview();
 
-            // --- генерация QR (возвращает Promise с canvas) ---
-            function generateQRCanvas(text, size) {
+            // генерация QR с переданным текстом
+            function generateQR(text, container) {
                 return new Promise((resolve) => {
-                    const container = document.createElement('div');
-                    container.style.width = size + 'px';
-                    container.style.height = size + 'px';
+                    container.innerHTML = '';
                     new QRCode(container, {
                         text: text,
-                        width: size,
-                        height: size,
+                        width: 350,
+                        height: 350,
                         colorDark: '#0b1a33',
                         colorLight: '#ffffff',
                         correctLevel: QRCode.CorrectLevel.M
                     });
-                    // дождёмся отрисовки
-                    setTimeout(() => {
-                        const canvas = container.querySelector('canvas');
-                        if (canvas) {
-                            resolve(canvas);
-                        } else {
-                            // fallback
-                            const img = container.querySelector('img');
-                            if (img) {
-                                const c = document.createElement('canvas');
-                                c.width = size;
-                                c.height = size;
-                                const ctx = c.getContext('2d');
-                                ctx.drawImage(img, 0, 0, size, size);
-                                resolve(c);
-                            } else {
-                                resolve(null);
-                            }
-                        }
-                    }, 200);
+                    // даём время на отрисовку
+                    setTimeout(resolve, 250);
                 });
             }
 
-            // --- построение шаблона ---
-            async function buildPageTemplate(index, rawCode, userName) {
-                const mode = layoutMode.value;
-                const cols = parseInt(gridCols.value) || 2;
-                const rows = parseInt(gridRows.value) || 2;
-                let qrSize = parseInt(qrSizeInput.value) || 180;
-                let numberSize = parseInt(numberSizeInput.value) || 200;
-                const showLabel = showLabelSelect.value === 'true';
-
-                // ограничим
-                qrSize = Math.min(350, Math.max(60, qrSize));
-                numberSize = Math.min(400, Math.max(60, numberSize));
-
-                const fullCode = getQRText(rawCode, index);
-
-                // очищаем сетку
-                qrGrid.innerHTML = '';
-                pageNumberEl.textContent = String(index);
-                pageNameEl.textContent = userName || 'КС';
-
-                // стиль цифры
-                pageNumberEl.style.fontSize = numberSize + 'px';
-
-                if (mode === 'big-number') {
-                    // Большая цифра + 1 QR
-                    const wrapper = document.createElement('div');
-                    wrapper.style.display = 'flex';
-                    wrapper.style.flexDirection = 'column';
-                    wrapper.style.alignItems = 'center';
-                    wrapper.style.gap = '20px';
-
-                    // Цифра уже есть сверху, просто добавим QR под ней
-                    const qrItem = document.createElement('div');
-                    qrItem.className = 'qr-item';
-                    const canvas = await generateQRCanvas(fullCode, qrSize);
-                    if (canvas) qrItem.appendChild(canvas);
-                    if (showLabel) {
-                        const label = document.createElement('div');
-                        label.className = 'qr-label';
-                        label.textContent = fullCode;
-                        qrItem.appendChild(label);
-                    }
-                    wrapper.appendChild(qrItem);
-                    // вставим после цифры
-                    pageNumberEl.after(wrapper);
-                    // но нам нужно поместить в qrGrid, чтобы не ломалось
-                    // Просто перенесём всё в qrGrid
-                    qrGrid.innerHTML = '';
-                    qrGrid.style.flexDirection = 'column';
-                    qrGrid.appendChild(wrapper);
-                } else {
-                    // Сетка
-                    let total = cols * rows;
-                    if (mode === 'grid-4') { total = 4;
-                        qrGrid.style.gridTemplateColumns = '1fr 1fr'; } else if (mode === 'grid-6') { total = 6;
-                        qrGrid.style.gridTemplateColumns = '1fr 1fr 1fr'; } else if (mode === 'grid-9') { total = 9;
-                        qrGrid.style.gridTemplateColumns = '1fr 1fr 1fr'; } else {
-                        // custom
-                        qrGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-                    }
-
-                    qrGrid.style.display = 'grid';
-                    qrGrid.style.gap = '16px';
-                    qrGrid.style.justifyItems = 'center';
-                    qrGrid.style.alignItems = 'center';
-
-                    // Для big-number мы уже обработали, но чтобы не дублировать, сделаем отдельно
-                    // переопределим для сетки
-                    if (mode !== 'big-number') {
-                        // определим количество
-                        let count = total;
-                        if (mode === 'grid-4') count = 4;
-                        else if (mode === 'grid-6') count = 6;
-                        else if (mode === 'grid-9') count = 9;
-                        else count = cols * rows;
-
-                        for (let i = 1; i <= count; i++) {
-                            const item = document.createElement('div');
-                            item.className = 'qr-item';
-                            const code = getQRText(rawCode, i);
-                            const canvas = await generateQRCanvas(code, qrSize);
-                            if (canvas) item.appendChild(canvas);
-                            if (showLabel) {
-                                const label = document.createElement('div');
-                                label.className = 'qr-label';
-                                label.textContent = code;
-                                item.appendChild(label);
-                            }
-                            qrGrid.appendChild(item);
-                        }
-                    } else {
-                        // big-number уже обработан выше, но мы его поместили в qrGrid
-                        // ничего не делаем
-                    }
-                }
-
-                // если big-number — мы уже заполнили qrGrid
-                if (mode === 'big-number') {
-                    // уже сделано
-                }
-
-                // вернём ссылку на элемент
-                return pageTemplate;
-            }
-
-            // --- генерация PDF ---
             async function generatePDF() {
                 const mrtCode = mrtCodeInput.value.trim();
                 const sheetCount = parseInt(sheetCountInput.value) || 1;
@@ -599,10 +362,18 @@
                     for (let i = 1; i <= sheetCount; i++) {
                         if (i > 1) doc.addPage();
 
-                        // строим шаблон
-                        await buildPageTemplate(i, mrtCode, userName);
+                        // какой текст попадёт в QR и подпись
+                        const fullCode = getQRText(mrtCode, i);
 
-                        // рендерим
+                        // Обновляем шаблон
+                        pageNumber.textContent = String(i);
+                        pageName.textContent = userName;
+                        qrText.textContent = fullCode;
+
+                        // Генерируем QR
+                        await generateQR(fullCode, qrContainer);
+
+                        // Конвертируем в canvas
                         const canvas = await html2canvas(pageTemplate, {
                             scale: 1.5,
                             useCORS: true,
@@ -611,12 +382,13 @@
                             height: 1131
                         });
 
+                        // Добавляем в PDF
                         const imgData = canvas.toDataURL('image/jpeg', 0.95);
                         doc.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
                     }
 
                     doc.save(`MRT_${mrtCode}.pdf`);
-                    showStatus(`✅ PDF создан! (${sheetCount} листов)`, 'ok');
+                    showStatus(`✅ PDF создан! (${sheetCount} листов, стиль: ${currentStyle})`, 'ok');
 
                 } catch (error) {
                     console.error(error);
@@ -624,27 +396,22 @@
                 }
             }
 
-            // --- очистка ---
             function clearAll() {
                 mrtCodeInput.value = '960302247';
                 sheetCountInput.value = '3';
                 userNameInput.value = 'КС';
-                styleSelect.value = 'old';
-                layoutMode.value = 'big-number';
-                gridCols.value = '2';
-                gridRows.value = '2';
-                qrSizeInput.value = '180';
-                numberSizeInput.value = '200';
-                showLabelSelect.value = 'true';
+                // сброс стиля на старый (по умолчанию)
+                styleButtons.forEach(b => b.classList.remove('active'));
+                document.querySelector('#styleToggle button[data-style="old"]').classList.add('active');
+                currentStyle = 'old';
                 updatePreview();
-                showStatus('🧹 Сброшено', 'ok');
+                showStatus('🧹 Очищено (старый стиль)', 'ok');
             }
 
-            // --- события ---
             generateBtn.addEventListener('click', generatePDF);
             clearBtn.addEventListener('click', clearAll);
 
-            document.querySelectorAll('input, select').forEach(el => {
+            document.querySelectorAll('input').forEach(el => {
                 el.addEventListener('keydown', e => { if (e.key === 'Enter') generatePDF(); });
             });
 
