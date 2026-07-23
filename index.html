@@ -131,7 +131,7 @@
             border: 1px solid #b13e3e;
         }
 
-        /* ========== НОВЫЙ ШАБЛОН С РАЗМЕТКОЙ ========== */
+        /* ========== ШАБЛОН С РАЗМЕТКОЙ 70/20/10 ========== */
         #pageTemplate {
             position: fixed;
             left: -9999px;
@@ -142,55 +142,58 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            font-family: Arial, sans-serif;
-            /* Визуальная разметка для разработчика (будет видна только в шаблоне) */
-            border: 2px dashed rgba(255, 0, 0, 0.2);
+            font-family: 'Aptos Narrow', 'Arial Narrow', Arial, sans-serif;
+            border: 2px dashed rgba(255, 0, 0, 0.15);
         }
 
-        /* 80% высоты — цифра */
+        /* 70% высоты — цифра (растянутая по ширине) */
         #pageTemplate .zone-number {
-            height: 80%;
+            height: 70%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(240, 248, 255, 0.3);
-            border-bottom: 1px dashed rgba(0, 0, 255, 0.15);
+            background: rgba(240, 248, 255, 0.2);
+            border-bottom: 1px dashed rgba(0, 0, 255, 0.12);
             position: relative;
+            padding: 0 20px;
+            overflow: hidden;
         }
 
         #pageTemplate .zone-number .big-number {
-            font-size: 520px;
-            font-weight: 900;
+            font-size: 580px;
+            font-weight: 700;
             color: #0b1a33;
             line-height: 1;
-            letter-spacing: -6px;
+            letter-spacing: -8px;
             text-align: center;
+            width: 100%;
+            transform: scaleX(1.05);
+            font-family: 'Aptos Narrow', 'Arial Narrow', Arial, sans-serif;
             user-select: none;
+            white-space: nowrap;
         }
 
-        /* 10% высоты — QR-коды */
+        /* 20% высоты — QR-код (один, крупный) */
         #pageTemplate .zone-qr {
-            height: 10%;
+            height: 20%;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 240, 0.2);
-            border-bottom: 1px dashed rgba(0, 128, 0, 0.15);
-            padding: 0 20px;
+            background: rgba(255, 255, 240, 0.15);
+            border-bottom: 1px dashed rgba(0, 128, 0, 0.12);
+            padding: 10px 20px;
         }
 
-        #pageTemplate .zone-qr .qr-strip {
+        #pageTemplate .zone-qr .qr-single {
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
             align-items: center;
-            gap: 12px 20px;
         }
 
-        #pageTemplate .zone-qr .qr-strip .mini-qr canvas,
-        #pageTemplate .zone-qr .qr-strip .mini-qr img {
-            width: 60px !important;
-            height: 60px !important;
+        #pageTemplate .zone-qr .qr-single canvas,
+        #pageTemplate .zone-qr .qr-single img {
+            width: 140px !important;
+            height: 140px !important;
             display: block;
         }
 
@@ -200,31 +203,33 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 240, 245, 0.2);
+            background: rgba(255, 240, 245, 0.1);
             padding: 0 20px;
         }
 
         #pageTemplate .zone-name .page-name {
-            font-size: 48px;
-            font-weight: 700;
+            font-size: 44px;
+            font-weight: 600;
             color: #0b1a33;
             text-align: center;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            font-family: 'Aptos Narrow', 'Arial Narrow', Arial, sans-serif;
         }
 
-        /* Подписи зон (видны только в шаблоне, для разработчика) */
+        /* Подписи зон (видны в шаблоне, скрываются в PDF) */
         #pageTemplate .zone-label {
             position: absolute;
-            font-size: 12px;
+            font-size: 11px;
             color: rgba(0, 0, 0, 0.25);
             background: rgba(255, 255, 255, 0.7);
-            padding: 2px 8px;
+            padding: 2px 10px;
             border-radius: 4px;
             pointer-events: none;
+            font-family: system-ui, sans-serif;
         }
 
         #pageTemplate .zone-number .zone-label {
-            bottom: 8px;
+            bottom: 6px;
             right: 12px;
         }
 
@@ -281,18 +286,19 @@
             background: rgba(255, 255, 255, 0.4);
         }
 
-        /* Адаптация под маленькие экраны (для шаблона) */
+        /* Адаптация для маленьких экранов */
         @media (max-width: 820px) {
             #pageTemplate .zone-number .big-number {
-                font-size: 380px;
+                font-size: 400px;
+                letter-spacing: -4px;
             }
-            #pageTemplate .zone-qr .qr-strip .mini-qr canvas,
-            #pageTemplate .zone-qr .qr-strip .mini-qr img {
-                width: 44px !important;
-                height: 44px !important;
+            #pageTemplate .zone-qr .qr-single canvas,
+            #pageTemplate .zone-qr .qr-single img {
+                width: 100px !important;
+                height: 100px !important;
             }
             #pageTemplate .zone-name .page-name {
-                font-size: 34px;
+                font-size: 32px;
             }
         }
     </style>
@@ -300,7 +306,7 @@
 <body>
     <div class="container">
         <h1>⬛ MRT PDF</h1>
-        <div class="sub">80% — цифра · 10% — QR · 10% — название</div>
+        <div class="sub">70% — цифра · 20% — QR · 10% — название</div>
 
         <div class="style-toggle" id="styleToggle">
             <button class="active" data-style="old">📜 Старый стиль</button>
@@ -333,18 +339,18 @@
         <div class="footer">Работает полностью в браузере</div>
     </div>
 
-    <!-- ========== НОВЫЙ ШАБЛОН С РАЗМЕТКОЙ 80/10/10 ========== -->
+    <!-- ========== ШАБЛОН 70/20/10 ========== -->
     <div id="pageTemplate">
-        <!-- Зона 80% — цифра -->
+        <!-- Зона 70% — цифра (растянута) -->
         <div class="zone-number">
             <div class="big-number" id="pageNumber">1</div>
-            <div class="zone-label">⬆ 80% — цифра</div>
+            <div class="zone-label">⬆ 70% — цифра (растянута)</div>
         </div>
 
-        <!-- Зона 10% — QR-коды -->
+        <!-- Зона 20% — один QR-код -->
         <div class="zone-qr">
-            <div class="qr-strip" id="qrStrip"></div>
-            <div class="zone-label">⬆ 10% — QR</div>
+            <div class="qr-single" id="qrSingle"></div>
+            <div class="zone-label">⬆ 20% — QR</div>
         </div>
 
         <!-- Зона 10% — название -->
@@ -367,7 +373,7 @@
             // Элементы шаблона
             const pageTemplate = document.getElementById('pageTemplate');
             const pageNumber = document.getElementById('pageNumber');
-            const qrStrip = document.getElementById('qrStrip');
+            const qrSingle = document.getElementById('qrSingle');
             const pageName = document.getElementById('pageName');
 
             let currentStyle = 'old';
@@ -406,35 +412,27 @@
             mrtCodeInput.addEventListener('input', updatePreview);
             updatePreview();
 
-            // Генерация 5 маленьких QR в строку
-            function generateQRStrip(text, container, count = 5) {
+            // Генерация ОДНОГО QR-кода (крупного)
+            function generateSingleQR(text, container) {
                 return new Promise((resolve) => {
                     container.innerHTML = '';
-                    const fragment = document.createDocumentFragment();
+                    const qrDiv = document.createElement('div');
+                    container.appendChild(qrDiv);
 
-                    for (let i = 0; i < count; i++) {
-                        const wrapper = document.createElement('div');
-                        wrapper.className = 'mini-qr';
-                        const qrDiv = document.createElement('div');
-                        wrapper.appendChild(qrDiv);
-                        fragment.appendChild(wrapper);
-
-                        try {
-                            new QRCode(qrDiv, {
-                                text: text,
-                                width: 60,
-                                height: 60,
-                                colorDark: '#0b1a33',
-                                colorLight: '#ffffff',
-                                correctLevel: QRCode.CorrectLevel.M
-                            });
-                        } catch (e) {
-                            qrDiv.innerHTML = 'ERR';
-                        }
+                    try {
+                        new QRCode(qrDiv, {
+                            text: text,
+                            width: 140,
+                            height: 140,
+                            colorDark: '#0b1a33',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    } catch (e) {
+                        qrDiv.innerHTML = 'QR error';
                     }
 
-                    container.appendChild(fragment);
-                    setTimeout(resolve, 300);
+                    setTimeout(resolve, 250);
                 });
             }
 
@@ -465,8 +463,8 @@
                         pageNumber.textContent = String(i);
                         pageName.textContent = userName;
 
-                        // Генерируем QR (5 штук)
-                        await generateQRStrip(fullCode, qrStrip, 5);
+                        // Генерируем один QR
+                        await generateSingleQR(fullCode, qrSingle);
 
                         // Рендерим страницу
                         const canvas = await html2canvas(pageTemplate, {
@@ -476,9 +474,8 @@
                             width: 800,
                             height: 1131,
                             backgroundColor: '#ffffff',
-                            // Убираем тени и артефакты
                             onclone: (clonedDoc) => {
-                                // Удаляем подписи зон в клоне, чтобы они не попали в PDF
+                                // Удаляем подписи зон в клоне
                                 const labels = clonedDoc.querySelectorAll('.zone-label');
                                 labels.forEach(el => el.style.display = 'none');
                             }
@@ -516,7 +513,7 @@
                 el.addEventListener('keydown', e => { if (e.key === 'Enter') generatePDF(); });
             });
 
-            console.log('✅ Готово! Разметка 80% — цифра, 10% — QR, 10% — название');
+            console.log('✅ Готово! Aptos Narrow, 70/20/10, один QR');
         })();
     </script>
 </body>
