@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1a33">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔳</text></svg>">
     <title>MRT QR Generator → PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
     </script>
@@ -495,33 +497,33 @@
 
             // Обновление отображения слайдеров
             function updateSliders() {
-                let n = parseInt(sizeNumber.value);
-                let q = parseInt(sizeQR.value);
-                let nm = parseInt(sizeName.value);
-                
-                // Корректируем, чтобы сумма была 100%
-                let sum = n + q + nm;
-                if (sum !== 100) {
-                    // Автокоррекция: меняем самый большой элемент
-                    if (sum > 100) {
-                        let diff = sum - 100;
-                        let maxVal = Math.max(n, q, nm);
-                        if (n === maxVal) { n = Math.max(40, n - diff); }
-                        else if (q === maxVal) { q = Math.max(10, q - diff); }
-                        else { nm = Math.max(5, nm - diff); }
-                    } else {
-                        let diff = 100 - sum;
-                        let maxVal = Math.max(n, q, nm);
-                        if (n === maxVal) { n = Math.min(85, n + diff); }
-                        else if (q === maxVal) { q = Math.min(40, q + diff); }
-                        else { nm = Math.min(25, nm + diff); }
+                const min = { n: 40, q: 10, nm: 5 };
+                const max = { n: 85, q: 40, nm: 25 };
+                const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+                let n = clamp(parseInt(sizeNumber.value) || min.n, min.n, max.n);
+                let q = clamp(parseInt(sizeQR.value) || min.q, min.q, max.q);
+                let nm = clamp(parseInt(sizeName.value) || min.nm, min.nm, max.nm);
+
+                // Гарантируем сумму ровно 100%: распределяем остаток
+                // по зонам, у которых есть запас до min/max
+                const vals = { n, q, nm };
+                let diff = 100 - (n + q + nm);
+                let guard = 0;
+                while (diff !== 0 && guard < 200) {
+                    guard++;
+                    for (const key of ['n', 'q', 'nm']) {
+                        if (diff === 0) break;
+                        if (diff > 0 && vals[key] < max[key]) { vals[key]++; diff--; }
+                        else if (diff < 0 && vals[key] > min[key]) { vals[key]--; diff++; }
                     }
-                    // Обновляем значения слайдеров
-                    sizeNumber.value = n;
-                    sizeQR.value = q;
-                    sizeName.value = nm;
                 }
-                
+                n = vals.n; q = vals.q; nm = vals.nm;
+
+                // Обновляем значения слайдеров
+                sizeNumber.value = n;
+                sizeQR.value = q;
+                sizeName.value = nm;
+
                 sizeNumberVal.textContent = n + '%';
                 sizeQRVal.textContent = q + '%';
                 sizeNameVal.textContent = nm + '%';
